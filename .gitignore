@@ -8,6 +8,14 @@
 *.cmxs
 *.cmxa
 
+*.aux
+*.log
+*.nav
+*.out
+*.pdf
+*.snm
+*.toc
+
 # ocamlbuild working directory
 _build/
 
