@@ -1,0 +1,125 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+
+\newcommand{\code}[1]{\mintinline{ocaml}{#1}}
+
+\title{Discussion 02}
+\subtitle{Functions}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+\date{Jan. 28, 2019}
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+
+    \begin{frame}{Key Concepts}
+        Functions are $\ldots$
+        \begin{itemize}
+            \item<1-> \textbf{values}.
+            \item<2-> characterized by their \textbf{type}.
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Syntax}
+        \begin{block}{Definition}<1->
+            \begin{itemize}
+                \item \mint{ocaml}{let f = fun x -> e }
+                \item \mint{ocaml}{let f x = e }
+            \end{itemize}
+        \end{block}
+
+        \begin{block}{Application}<2->
+            \begin{itemize}
+                \item \mint{ocaml}{f x y z} 
+            \end{itemize}
+        \end{block}
+
+    \end{frame}
+
+    \begin{frame}{Static Semantics}
+        \begin{block}{Definition: \code{fun x1 ... xn -> e}}<1->
+            \begin{itemize}
+                \item If each parameter \code{xi} has type \code{ti},
+                \item If the body \code{e} has type \code{u} (knowing the types of each \code{xi})
+                \item Then conclude type \code{t1 -> ... -> tn -> u}
+            \end{itemize}
+        \end{block}
+
+        \begin{block}{Application: \code{e0 e1 ... en}}<2->
+            \begin{itemize}
+                \item If \code{e0} has type \code{t1 -> ... -> tn -> u}
+                \item If each argument \code{ei} has type \code{ti}
+                \item Then conclude type \code{u}
+            \end{itemize}
+        \end{block}
+    \end{frame}
+
+    \begin{frame}{Dynamic Semantics}
+        \begin{block}{Definition: \code{fun x1 ... xn -> e}}<1->
+            \begin{itemize}
+                \item<2-> Already a value: no need to evaluate further!
+            \end{itemize}
+        \end{block}
+
+        \begin{block}{Application: \code{e0 e1 ... en}}<3->
+            \begin{itemize}
+                \item Evaluate each expression \code{ei} to a value \code{vi}
+                \begin{itemize}
+                    \item \code{e0} will evaluate to a function \code{v0}: why?
+                    \item \code{ei} will evaluate to argument \code{vi}
+                \end{itemize}
+                \item Substitute each argument into the body of \code{e} to get \code{e'}
+                \item Evaluate \code{e'} to value \code{v}
+            \end{itemize}
+        \end{block} 
+    \end{frame}
+
+    \begin{frame}{Guess the Type}
+        \begin{itemize} 
+            \item<1-> \code{fun x -> x + 2}
+            \item<2-> \code{fun x -> x +. 2.0}
+            \item<3-> \code{fun x y -> x + y}
+            \item<4-> \code{fun x y z -> x + y}
+            \item<5-> \code{fun x -> x}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Partial Application}
+        \begin{itemize}
+            \item<1-> Apply a function with \code{n} parameters to \code{m} arguments, \code{m < n}
+            \item<2-> Get back a function that takes \code{n - m} arguments
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Currying}
+        \begin{block}{Uncurried}<1->
+            \begin{itemize}
+                \item<1-> \code{(fun x y z -> x + y + z) 1 2 3}
+                \item<2-> \code{1 + 2 + 3}
+                \item<3-> \code{6}
+            \end{itemize}
+        \end{block}
+
+        \begin{block}{Curried}<4->
+            \begin{itemize}
+                \item<4-> \code{(fun x -> fun y -> fun z -> x + y + z) 1 2 3} 
+                \item<5-> \code{(fun y -> fun z -> 1 + y + z) 2 3}
+                \item<6-> \code{(fun z -> 1 + 2 + z) 3}
+                \item<7-> \code{1 + 2 + 3}
+                \item<8-> \code{6}
+            \end{itemize} 
+        \end{block}
+    \end{frame}
+
+    \begin{frame}{Exercises}
+
+    \end{frame}
+
+\end{document}
+
