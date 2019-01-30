@@ -7,12 +7,8 @@
 
 \usepackage{graphicx}
 \usepackage{hyperref}
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,      
-    urlcolor=cyan,
-}
+
+\newcommand{\code}[1]{\mint{ocaml}{#1}}
 
 \title{Discussion 01}
 \subtitle{Welcome to 3110!}
@@ -93,7 +89,7 @@
     \begin{frame}{Let Expressions}
         \begin{itemize}
             \item Let expressions have the following form:
-            \item \mint{ocaml}{let x = e1 in e2}
+            \item \code{let x = e1 in e2}
             \item Where \texttt{x} is an identifier and \texttt{e1}, \texttt{e2} are expressions
         \end{itemize}
     \end{frame}
@@ -112,22 +108,22 @@
     
     \begin{frame}{Let Expressions: Dynamic Semantics}
         \begin{itemize}
-            \item \mint{ocaml}{let z = 0 + 1 in z + 41}
-            \item \mint{ocaml}{let z = 1 in z + 41}
-            \item \mint{ocaml}{1 + 41}
-            \item \mint{ocaml}{42}
+            \item \code{let z = 0 + 1 in z + 41}
+            \item \code{let z = 1 in z + 41}
+            \item \code{1 + 41}
+            \item \code{42}
         \end{itemize} 
     \end{frame}
     
     \begin{frame}{Let Expressions: Dynamic Semantics}
         \begin{itemize}
-            \item \mint{ocaml}{let y = 25 in let z = y * 3 in z - y}
-            \item \mint{ocaml}{let z = y * 3 in z - y }
-            \item \mint{ocaml}{let z = 25 * 3 in z - 25}
-            \item \mint{ocaml}{let z = 75 in z - 25}
-            \item \mint{ocaml}{z - 25}
-            \item \mint{ocaml}{75 - 25}
-            \item \mint{ocaml}{50}
+            \item \code{let y = 25 in let z = y * 3 in z - y}
+            \item \code{let z = y * 3 in z - y }
+            \item \code{let z = 25 * 3 in z - 25}
+            \item \code{let z = 75 in z - 25}
+            \item \code{z - 25}
+            \item \code{75 - 25}
+            \item \code{50}
         \end{itemize} 
     \end{frame}
     
@@ -143,7 +139,7 @@
         \end{itemize}    
     \end{frame}
     
-    \begin{frame}{Recitation Questions}
+    \begin{frame}{Recitation Exercises}
     \end{frame}
 
 \end{document}
