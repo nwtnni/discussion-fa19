@@ -15,9 +15,13 @@
 *.pdf
 *.snm
 *.toc
+*.vrb
 
 # ocamlbuild working directory
 _build/
+
+# Minted cache
+_minted-slides
 
 # ocamlbuild targets
 *.byte
