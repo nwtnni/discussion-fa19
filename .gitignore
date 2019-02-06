@@ -21,6 +21,9 @@ _build/
 
 # Minted cache
 _minted-slides
+*.mintedcmd
+*.mintedmd5
+*.pyg
 
 # ocamlbuild targets
 *.byte

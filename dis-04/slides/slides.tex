@@ -1,0 +1,141 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+
+\usepackage[percent]{overpic}
+
+\newcommand{\code}[1]{\mintinline{ocaml}{#1}}
+
+\title{Discussion 04}
+\subtitle{Variants}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+\date{Feb. 6, 2019}
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+
+    \begin{frame}{Key Concepts}
+        \begin{itemize}
+            \item<1-> Sum types are \textbf{fundamental}.
+            \item<2-> Option types enable \textbf{static analysis}.
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \centering
+        \begin{overpic}[width=0.75\textwidth]{brain.jpg}
+            \put(3, 94) {\code{type coin =}}
+            \put(3, 89) {\code{| Penny}}
+            \put(3, 84) {\code{| Nickel}}
+            \put(3, 79) {\code{| Dime}}
+            \put(3, 74) {\code{| Quarter}}
+
+            \put(3, 60) {\code{type shape =}}
+            \put(3, 55) {\code{| Point }}
+            \put(3, 50) {\code{| Square of int }}
+            \put(3, 45) {\code{| Circle of }}
+            \put(3, 40) {\code{{ radius: int }}}
+
+            \put(3, 25) {\code{type 'a t =}}
+            \put(3, 20) {\code{| Leaf}}
+            \put(3, 15) {\code{| Node of}}
+            \put(3, 10) {\code{'a * 'a t * 'a t}}
+        \end{overpic}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Variants: Enumerations}
+        \centering
+        \begin{minted}{ocaml}
+            type coin =
+            | Penny
+            | Nickel
+            | Dime
+            | Quarter
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}{Variants: Enumerations}
+        Useful when $\ldots$
+        \begin{itemize}
+            \item<1-> You have a small number of constants
+            \item<2-> e.g.\ card suits, keyboard buttons, Crayon colors
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Variants: Tagged Unions}
+        \begin{minted}{ocaml}
+            type shape =
+            | Point
+            | Square of int
+            | Circle of { radius: int }
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}
+        Useful when $\ldots$
+        \begin{itemize}
+            \item<1-> You have different representations of a concept
+            \item<2-> e.g. state machines, errors, class hierarchies
+        \end{itemize}
+
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Variants: Recursion and Polymorphism}
+        \begin{minted}{ocaml}
+            type 'a tree =
+            | Leaf
+            | Node of 'a * 'a tree * 'a tree
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}{Variants: Recursion and Polymorphism}
+        Useful when $\ldots$
+        \begin{itemize}
+            \item<1-> You have inductively defined (self-similar) data
+            \item<2-> e.g. naturals, trees, languages, games
+        \end{itemize}
+    \end{frame}
+    
+    \begin{frame}[fragile=singleslide]{Exercise: Calculator}
+        \begin{minted}{ocaml} 
+        (** Represents a binary operator. *)
+        type bin =
+        | Add
+        | Sub
+        | Mul
+        | Div
+
+        (** Represents an expression. *)
+        type exp =
+        | Int of int
+        | Bin of exp * bin * exp
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}{Exercise: Calculator}
+        \begin{itemize}
+            \item<1-> You only have to worry about \texttt{calculator.ml}
+            \item<2-> Three increasingly interesting functions:
+            \item<3-> \code{let rec string_of_bin (b: bin) : string}
+            \item<4-> \code{let rec string_of_exp (e: exp) : string}
+            \item<5-> \code{let rec eval (e: exp) : (int option)}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Exercise: Calculator}
+        \begin{itemize}
+            \item<1-> Use \texttt{make} to compile and run the calculator
+            \item<2-> Calculator will accept expressions in REPL (e.g. (5 * (2 - 3)))
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Recitation Exercises}
+    \end{frame}
+
+\end{document}
