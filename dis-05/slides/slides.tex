@@ -1,0 +1,133 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\title{Discussion 05}
+\subtitle{Higher-Order Functions}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+\date{Feb. 11, 2019}
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+    
+    \begin{frame}{Agenda}
+    \begin{enumerate}
+        \item Review Options (optional) ((pun intended))
+        
+        \item Higher-Order Functions
+        
+        \item Recitation 6 (Please pull it up as you enter)
+    \end{enumerate}
+    \end{frame}
+    
+    \begin{frame}[fragile]{(Review) Options}
+        Options are a common variant type built into the language:
+        \begin{itemize}
+            \item \mintinline{ocaml}{type 'a option = Some of 'a | None} \pause
+            
+            \item This is an example of ``parametric polymorphism." The \mintinline{ocaml}{option} type is paramaterized (hence parametric) on type \mintinline{ocaml}{'a}, which can be any type (hence polymorphic). \pause
+            
+            \item Example:
+            \begin{minted}[autogobble]{ocaml}
+            let safe_division (a:int) (b:int) : int option =
+              if b = 0 then None
+              else Some (a / b)
+            \end{minted}
+        \end{itemize}
+    \end{frame}
+    
+    \begin{frame}[fragile]{(Review) Option Examples}
+    \begin{itemize}
+        \item 
+        \begin{minted}[autogobble]{ocaml}
+        let safe_division (a:int) (b:int) : int option =
+          if b = 0 then None
+          else Some (a / b)
+        \end{minted}
+        \item 
+            \begin{minted}[autogobble]{ocaml}
+            let text_ui (a:int) (b:int) : unit =
+              match safe_division a b with
+              | Some x -> print_endline (string_of_int x)
+              | None -> print_endline "Error: Division by zero"
+            \end{minted}
+    \end{itemize}
+    \end{frame}
+    
+    \begin{frame}{Why Options?}
+    \begin{itemize}
+        \item My take: conceptually, options exist everywhere!
+        \item In Java, any pointer could be pointing to a real value or NULL.
+        \item However, using options makes this \textbf{explicit}.
+        \item If a value is wrapped in an Option, you are forced to pattern match on the None case, which means you \textit{don't unexpected exceptions}.
+    \end{itemize}
+    \end{frame}
+    
+    \section{Higher-Order Functions}
+    \begin{frame}[fragile]{What is a Higher-Order Function?}\pause
+    \begin{itemize}
+        \item Functions take in values as input arguments \pause
+        \item Functions are values \pause
+        \item If a function takes another function in as an input argument, it is called a ``higher-order function"
+    \end{itemize}
+    \end{frame}
+    
+    \begin{frame}[fragile]{The Simplest Example}
+    \begin{minted}[autogobble]{ocaml}
+    /**
+     * [apply] takes the function [f] and applies it to [a].
+     */
+    \end{minted}
+    \mintinline{ocaml}{let apply (a: 'a) (f: 'a -> 'b) : 'b = }\pause
+    \mintinline{ocaml}{ f a}
+    
+    \pause
+    \begin{itemize}
+        \item [f] is a function, so [apply] is higher order!
+    \end{itemize}
+        
+    \end{frame}
+    
+    \begin{frame}[fragile]{But Why Tho}
+    \begin{itemize}
+      \item Higher-order functions are a functional programming \textit{idiom}, or commonly used pattern in code. \pause
+      \item What are some Object-Oriented programming idioms? What do they do?
+      \begin{itemize} \pause
+          \item Encapsulation- hides unnecessary information to make code easier to understand
+          \item Inheritance- Used to share code between related classes
+      \end{itemize}
+    \end{itemize}
+    \end{frame}
+    
+    \begin{frame}{Examples using Higher-Order Functions}
+        
+    \end{frame}
+    
+    \begin{frame}{Factoring Out Code}
+    These are some things I think about when trying to factor code with higher-order programming
+    \begin{itemize}
+        \item Each function does some different kinds of \textit{computation}
+        \item For example, to sum a list, your computation includes \textit{iterating} through the list and \textit{summing} the list elements.
+        \item Higher-order programming can be used by abstracting the \textit{iterating} part of the computation, and passing in a function that does the \textit{summing} part.
+        \item The abstracted \textit{iterating} function is the \textbf{fold} function
+    \end{itemize}
+        
+    \end{frame}
+    
+
+\end{document}
