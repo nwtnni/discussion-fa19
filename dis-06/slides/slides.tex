@@ -1,0 +1,148 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+
+\newcommand{\code}[1]{\mintinline{ocaml}{#1}}
+
+\title{Discussion 06}
+\subtitle{Modules}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+\date{Feb. 13, 2019}
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+
+    \begin{frame}{Key Concepts}
+        \begin{itemize}
+            \item<1-> Signatures are \textbf{interfaces}
+            \item<2-> Abstract types enable \textbf{information hiding}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Signatures}
+
+        \centering
+        {\Large SIGNATURES ARE \textbf{NOT} IMPLEMENTATIONS}
+
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Signatures}
+        \begin{minted}{ocaml}
+        module type Zero = sig
+            val zero: int
+        end
+
+        (* Q: What is [Zero.zero]? *)
+        (* A: Error: Unbound module Zero *)
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Signatures: Undersatisfied}
+        \begin{minted}{ocaml}
+        module type Transition = sig
+            val start: int
+            val next: int -> int
+        end
+
+        module Count: Transition = struct
+            let start = 0
+        end
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Signatures: Oversatisfied}
+        \begin{minted}{ocaml}
+        module type Transition = sig
+            val start: int
+            val next: int -> int
+        end
+
+        module Count: Transition = struct
+            let start = 0
+            let square x = x * x
+            let next x = square x
+        end
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}{Signatures: Implicit}
+        \begin{itemize}
+            \item<1-> Q: do we need to explicitly write the signature?
+            \item<2-> \code{module Count: Transition = struct ... end}
+            \item<2-> \code{module Count = struct ... end}
+            \item<3-> A: Nope---but use not clear until \textbf{functors} next week!
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Abstract Types}
+        \begin{itemize}
+            \item<1-> Idiom: abstract type + module $\approx$ private data + class
+            \item<2-> \code{Stack.t} vs. \code{Stack}
+            \item<3-> Why private data?
+            \begin{itemize}
+                \item<4-> Loose coupling
+                \item<5-> Invariant upholding
+            \end{itemize}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Abstract Types: Loose Coupling}
+        \begin{minted}{ocaml}
+        module type Set = sig 
+            type 'a t
+            val empty: 'a t
+            val insert: 'a t -> 'a -> 'a t
+            val mem: 'a t -> 'a -> bool
+        end
+
+        module MySet: Set = struct
+            type 'a t = 'a list
+            ...
+        end
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Abstract Types: Invariants}
+        \begin{minted}{ocaml}
+        module type Nonzero = sig
+            type t
+            val t_of_int: int -> t option
+            val int_of_t: t -> int
+        end
+
+        module NonzeroSealed: Nonzero = struct
+            type t = int
+            let t_of_int = function
+            | 0 -> None
+            | n -> Some n
+            let int_of_t n = n
+        end
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}{Digression: \code{utop}}
+        \begin{itemize}
+            \item<1-> \texttt{\#use "source.ml"}
+            \item<2-> \texttt{\#require "library"}
+            \item<3-> \texttt{\#mod\_use "source.ml"}
+            \item<4-> \texttt{\#load "compiled.cmo"}
+            \item<5-> \texttt{\#load\_rec "compiled.cmo"}
+            \item<6-> \texttt{\#trace function}
+            \item<7-> \texttt{.ocamlinit}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Abstract Types: Experimenting}
+        \begin{itemize}
+            \item \code{let v: NonzeroFree.t = 0;;}
+            \item \code{let v: NonzeroSealed.t = 0;;}
+        \end{itemize}
+    \end{frame}
+
+\end{document}
