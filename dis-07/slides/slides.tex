@@ -1,0 +1,204 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+
+\newcommand{\code}[1]{\mintinline{ocaml}{#1}}
+
+\title{Discussion 07}
+\subtitle{Functors}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+\date{Feb. 13, 2019}
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{A1 Debrief: Pipelining}
+        \begin{minted}{ocaml}
+let cipher_char config c =
+  (map_plug config.plugboard
+    (inv_index
+      (map_rotors_l_to_r config.rotors
+        (map_refl config.refl
+          (map_rotors_r_to_l config.rotors
+            (index
+              (map_plug config.plugboard c)))))))
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{A1 Debrief: Pipelining}
+        \begin{minted}{ocaml}
+let cipher_char config c =
+    let v1 = map_plug config.plugboard c in
+    let v2 = index v1 in
+    let v3 = map_rotors_r_to_l config.rotors v2 in
+    let v4 = map_refl config.refl v3 in
+    let v5 = map_rotors_l_to_r config.rotors v4 in
+    let v6 = inv_index v5 in
+    map_plug config.plugboard v6
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{A1 Debrief: Pipelining}
+        \begin{minted}{ocaml}
+        let cipher_char config c =
+          c |> map_plug config.plugboard
+            |> index
+            |> map_rotors_r_to_l config.rotors
+            |> map_refl config.refl
+            |> map_rotors_l_to_r config.rotors
+            |> inv_index
+            |> map_plug config.plugboard
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}{Key Concept}
+        \begin{itemize}
+            \item Modules are to classes as functors are to \textbf{generic} classes
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Functors}
+        \begin{itemize}
+            \item<1-> Parameterize modules on other modules
+            \item<2-> Similar to higher-order functions at a module level
+            \item<3-> Another mechanism for code reuse
+        \end{itemize} 
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Functors: Map}
+        \begin{minted}{ocaml}
+(** Represents a type with a equality relation. *)
+module type Equatable = sig
+
+  (** The type of equatable values. *)
+  type t
+
+  (** [eq a b] is [true] if [a = b] else [false]. *)
+  val eq: t -> t -> bool
+
+end
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Functors: Map}
+        \begin{minted}{ocaml}
+(** Represents a key-value mapping. *)
+module type Map = sig
+  type 'a t
+  type key
+  val empty: 'a t
+  val add: key -> 'a -> 'a t -> 'a t
+  val get: key -> 'a t -> 'a option
+end
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Functors: Map}
+        \begin{minted}{ocaml}
+module MakeList (K : Equatable)
+  : (Map with type key = K.t) =
+struct
+  type 'a t = (* ... *)
+  type key = (* ... *)
+  let empty = (* ... *)
+  let add k v map = (* ... *)
+  let rec get k map = (* ... *)
+end
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Functors: Map}
+        \begin{minted}{ocaml}
+module MakeList (K : Equatable)
+  : (Map with type key = K.t) =
+struct
+  type 'a t = 'a list
+  type key = (* ... *)
+  let empty = (* ... *)
+  let add k v map = (* ... *)
+  let rec get k map = (* ... *)
+end
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Functors: Map}
+        \begin{minted}{ocaml}
+module MakeList (K : Equatable)
+  : (Map with type key = K.t) =
+struct
+  type 'a t = 'a list
+  type key = K.t
+  let empty = (* ... *)
+  let add k v map = (* ... *)
+  let rec get k map = (* ... *)
+end
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Functors: Map}
+        \begin{minted}{ocaml}
+module MakeList (K : Equatable)
+  : (Map with type key = K.t) =
+struct
+  type 'a t = 'a list
+  type key = K.t
+  let empty = []
+  let add k v map = (* ... *)
+  let rec get k map = (* ... *)
+end
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Functors: Map}
+        \begin{minted}{ocaml}
+module MakeList (K : Equatable)
+  : (Map with type key = K.t) =
+struct
+  type 'a t = 'a list
+  type key = K.t
+  let empty = []
+  let add k v map = (k, v) :: map
+  let rec get k map = (* ... *)
+end
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}{Functors: Map}
+        \begin{itemize}
+            \item<1-> \code{MakeList (Key)} makes maps that can compare \code{Key.t}
+            \item<2-> \code{MakeList (Int)} (see \code{equal.ml}) compares \code{Int.t = int}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Functors: Tests} 
+        \begin{itemize}
+            \item<1-> See \code{test.ml} for testing multiple implementations of maps
+            \item<2-> Same functionality, different implementations
+            \item<3-> Reuse test logic with functors!
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Functors: Experiments}
+        \begin{itemize}
+            \item<1-> Sealing and constraints
+            \begin{itemize}
+                \item \code{module Map = Map.MakeList (Equal.Int)}
+                \item \code{module Map = Map.MakeList (Equal.IntSealed)}
+                \item \code{module Map = Map.MakeList (Equal.IntConstrained)}
+            \end{itemize}
+            \item<2-> Other map implementations
+            \begin{itemize}
+                \item \code{MakeFun} functor
+            \end{itemize}
+        \end{itemize}
+    \end{frame}
+
+\end{frame}
+
+\end{document}
