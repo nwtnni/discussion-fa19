@@ -30,3 +30,7 @@ Central repository for slides, reviews, and exercises.
 6. [Modules](./dis-06)
   - [Slides](./dis-06/slides/slides.pdf)
   - [Exercises](./dis-06/exercises)
+
+7. [Functors](./dis-07)
+  - [Slides](./dis-07/slides/slides.pdf)
+  - [Exercises](./dis-07/exercises)
