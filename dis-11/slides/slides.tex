@@ -1,0 +1,174 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+
+\newcommand{\code}[1]{\mintinline{ocaml}{#1}}
+
+\title{Discussion 11}
+\subtitle{Streams and Laziness}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+\date{March 6, 2019}
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+
+    \begin{frame}{Key Ideas}
+        \begin{itemize}
+            \item Functions can be used to \textbf{delay} computation
+            \item Streams represent \textbf{infinite} iterators
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Noisy Expressions: Case Study}
+        \begin{minted}[autogobble]{ocaml}
+            let noisy_zero : int =
+              print_endline "HELLO, THIS IS 0";
+              0
+
+            let noisy (number: int) : unit =
+              Printf.printf "HELLO, THIS IS %i\n" number;
+              number
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Eager Evaluation}
+        \begin{minted}[autogobble]{ocaml}
+            let noisy (number: int) : unit =
+              Printf.printf "HELLO, THIS IS %i\n" number;
+              number
+
+            let print_eager (number: int) : unit =
+              Printf.printf "PRINTING...\n";
+              Printf.printf "%i\n" number
+
+            print_eager (noisy 5)
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Lazy Evaluation}
+        \begin{minted}[autogobble]{ocaml}
+            let noisy (number: int) : unit =
+              Printf.printf "HELLO, THIS IS %i\n" number;
+              number
+
+            let print_lazy (number: unit -> int) : unit =
+              Printf.printf "PRINTING...\n";
+              Printf.printf "%i\n" (number ())
+
+            print_lazy (fun () -> noisy 5)
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}{Laziness: Real Examples}
+        \begin{itemize}
+            \item<1-> Side effects
+            \item<2-> \code{let input = read_line ()}
+            \item<3-> Unused code paths
+            \item<4-> \code{let lookup key otherwise = (* ... *)}
+            \item<5-> Asynchronous callbacks
+            \item<6-> \code{load_image "cat.png" (fun image -> (* ... *))}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Streams}
+        \begin{minted}[autogobble]{ocaml}
+            module type Stream = sig
+              (* Abstract type *)
+              type t
+
+              (* Create a stream that goes from start to infinity *)
+              val make: int -> t
+
+              (* Get current value *)
+              val head: t -> int
+                
+              (* Go to next iteration *)
+              val tail: t -> t
+            end
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Streams: Take One}
+        \begin{minted}[autogobble]{ocaml}
+            type t = int * t
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Streams: Take Two}
+        \begin{minted}[autogobble]{ocaml}
+            type t = {
+              head: int;
+              tail: t;
+            }
+
+            let head s = s.head
+
+            let tail s = s.tail
+
+            let rec make (n: int) : t =
+              failwith "Unimplemented"
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Streams: Take Two}
+        \begin{minted}[autogobble]{ocaml}
+            let rec make (n: int) : t =
+              { head = n;
+                tail = make (n + 1) }
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Streams: Take Three}
+        \begin{minted}[autogobble]{ocaml}
+            type t = {
+              head: int;
+              tail: unit -> t;
+            }
+
+            let head s = s.head
+
+            let tail s =
+              failwith "Unimplemented"
+
+            let rec make (n: int) : t =
+              failwith "Unimplemented"
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Streams: Take Four}
+        \begin{minted}[autogobble]{ocaml}
+            type t = Stream of int * (unit -> t)
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Streams: Take Four}
+        \begin{minted}[autogobble]{ocaml}
+            let head s = match s with
+            | Stream (h, _) -> h
+
+            let head = function
+            | Stream (h, _) -> h
+
+            let head (Stream (h, _)) = h
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Streams: Exercises}
+        \begin{minted}[autogobble]{ocaml}
+            (** [map s f] is the stream returning [f x] for
+              * each [x] in stream [s] *)
+            let map s f = failwith "Unimplemented"
+
+            (** [take s n] is the list of the first [n]
+              * elements in stream [s]. *)
+            let take s n = failwith "Unimplemented"
+        \end{minted}
+    \end{frame}
+
+\end{document}
