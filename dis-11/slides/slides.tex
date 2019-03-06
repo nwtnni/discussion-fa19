@@ -31,7 +31,7 @@
               print_endline "HELLO, THIS IS 0";
               0
 
-            let noisy (number: int) : unit =
+            let noisy (number: int) : int =
               Printf.printf "HELLO, THIS IS %i\n" number;
               number
         \end{minted}
@@ -39,7 +39,7 @@
 
     \begin{frame}[fragile=singleslide]{Eager Evaluation}
         \begin{minted}[autogobble]{ocaml}
-            let noisy (number: int) : unit =
+            let noisy (number: int) : int =
               Printf.printf "HELLO, THIS IS %i\n" number;
               number
 
@@ -53,7 +53,7 @@
 
     \begin{frame}[fragile=singleslide]{Lazy Evaluation}
         \begin{minted}[autogobble]{ocaml}
-            let noisy (number: int) : unit =
+            let noisy (number: int) : int =
               Printf.printf "HELLO, THIS IS %i\n" number;
               number
 
