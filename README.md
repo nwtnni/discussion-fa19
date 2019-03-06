@@ -34,3 +34,12 @@ Central repository for slides, reviews, and exercises.
 7. [Functors](./dis-07)
   - [Slides](./dis-07/slides/slides.pdf)
   - [Exercises](./dis-07/exercises)
+
+8. [Specifications](./dis-08)
+  - [Slides](./dis-08/slides.pdf)
+
+9. [Abstraction Functions and Representation Invariants](./dis-09)
+  - [Exercises](./dis-09/exercises)
+
+10. [Testing](./dis-10)
+  - [Slides](./dis-10/slides.pdf)

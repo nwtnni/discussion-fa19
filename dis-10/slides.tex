@@ -1,0 +1,75 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+
+\title{Discussion 10}
+\subtitle{Testing}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+    
+    \begin{frame}{Agenda}
+    \begin{enumerate}
+        \item Review Testing/Verification
+            \begin{itemize}
+                \item Black Box vs. Glass Box
+            \end{itemize}
+        \item Rec 11 (please have it pulled up)
+        \item Test-Driven Development
+            \begin{itemize}
+                \item Bounded Queue
+                \item List Set- No Dups
+            \end{itemize}
+    \end{enumerate}
+    \end{frame}
+    
+    \begin{frame}{Review- Testing Strategies}
+    \begin{itemize}
+        \item Black Box- test against an interface with no knowledge of the internal implementation \pause
+        \item Glass Box- test against interface with knowledge of the internal implementation \pause
+        \item Edge Cases- think about weird inputs that could potentially break your code \pause
+        \item Randomized Testing- generate random inputs to get more coverage with your tests (especially useful if you already implemented a rep\_ok function). \pause
+        \item Stress Testing- put in large inputs/datasets and see if your implementation breaks
+    \end{itemize}
+    \end{frame}
+    
+    \begin{frame}{Test-Driven Development}
+    Why write tests before code? \pause
+    \begin{itemize}
+        \item It helps you design your specs \pause
+        \item It allows you to redesign very quickly \pause
+        \item It gives your whole team a common understanding of the code
+    \end{itemize}
+    \end{frame}
+    
+    \begin{frame}[fragile=singleslide]{Bounded Queue}
+    \begin{minted}{ocaml}
+    module type BoundedQueue = sig
+      type 'a t
+      val empty: int -> 'a t
+      val enqueue: 'a -> 'a t -> 'a t
+      val peek: 'a t -> 'a
+      val dequeue: 'a t -> 'a t
+    end
+    \end{minted}
+    \end{frame}
+    
+    \begin{frame}[fragile=singleslide]{List Set No Dups}
+    \begin{minted}{ocaml}
+    module type ListSetNoDups = sig
+      type 'a t
+      val empty: 'a t
+      val insert: 'a -> 'a t -> 'a t
+      val remove: 'a -> 'a t -> 'a t
+      val mem: 'a -> 'a t -> bool
+    end
+    \end{minted}
+    \end{frame}
+\end{document}
