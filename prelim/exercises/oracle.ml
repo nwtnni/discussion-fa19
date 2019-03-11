@@ -42,10 +42,10 @@ module Make (O: Oracle) : Tree with type key = O.t = struct
   let empty =
     failwith "Unimplemented"
 
-  let insert k tree =
+  let rec insert k tree =
     failwith "Unimplemented"
 
-  let mem k tree =
+  let rec mem k tree =
     failwith "Unimplemented"
 
 end
