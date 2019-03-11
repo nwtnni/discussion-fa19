@@ -45,5 +45,5 @@ Central repository for slides, reviews, and exercises.
   - [Slides](./dis-10/slides.pdf)
 
 11. [Streams and Laziness](./dis-11)
-  - [Slides](./dis-11/slides.pdf)
+  - [Slides](./dis-11/slides/slides.pdf)
   - [Exercises](./dis-11/exercises)
