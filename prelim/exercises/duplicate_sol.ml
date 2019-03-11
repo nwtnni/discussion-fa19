@@ -44,17 +44,33 @@ module Make (K: Compare) : Tree with type key = K.t = struct
       r: 'a t; }
 
   let rec insert k v tree =
-    failwith "Unimplemented"
+    match tree with
+    | Leaf ->
+      Node { k; v; n = 1; l = Leaf; r = Leaf; } 
+    | Node { k = k'; v = v'; n; l; r } ->
+      match K.compare k k' with
+      | Lt -> Node { k = k'; v = v'; n; l = insert k v l; r }
+      | Eq -> Node { k; v; n = n + 1; l; r }
+      | Gt -> Node { k = k'; v = v'; n; l; r = insert k v r }
 
   let rec size tree =
-    failwith "Unimplemented"
+    match tree with
+    | Leaf -> 0
+    | Node { k = _; v = _; n; l; r } ->
+      n + size l + size r
 
-  (* Hint: there are two cases per Node, depending on the count *)
   let rec fold_left f acc tree =
-    failwith "Unimplemented"
+    match tree with
+    | Leaf -> acc
+    | Node { k = _; v; n = 0; l; r } ->
+      let left = fold_left f acc l in
+      let right = fold_left f left r in
+      right
+    | Node { k; v; n; l; r } ->
+      let here = f acc v in
+      fold_left f here (Node { k; v; n = n - 1; l; r })
 
-  (* Implement with fold_left! *)
   let to_list tree =
-    failwith "Unimplemented"
+    fold_left (fun l v -> v :: l) [] tree
 
 end
