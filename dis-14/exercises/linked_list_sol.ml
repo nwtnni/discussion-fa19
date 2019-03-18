@@ -7,20 +7,19 @@ and 'a node = {
   mutable next: 'a node option;
 }
 
+(* Q: Why does this have to take in unit?
+ * What happens if we remove the unit argument? *)
 let empty () =
   { root = None }
 
 let push (e: 'a) (l: 'a linked_list) : unit =
-  let root = l.root in
-  let node = { elem = e; next = root } in
-  l.root <- Some node
+  let root' = { elem = e; next = l.root } in
+  l.root <- Some root'
 
 let pop (l: 'a linked_list) : 'a option =
   match l.root with
   | None -> None
-  | Some node ->
-    l.root <- node.next;
-    Some node.elem
+  | Some node -> l.root <- node.next; Some node.elem
 
 let len (l: 'a linked_list) : int =
   let rec len' (node: 'a node) =
