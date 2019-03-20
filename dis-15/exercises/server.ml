@@ -14,43 +14,39 @@ type client = {
 (** Global list of connected clients. *)
 let clients: (client * tx) list ref = ref []
 
-(** Color this client's name. *)
-let prettify client =
-  AT.sprintf [AT.Bold; client.color] "%s" client.name
-
 (** Return a prettified string with all connected clients in alphabetical order. *)
-let get_names () =
+let rec get_names () =
   !clients |> List.map fst
            |> List.sort (fun a b -> String.compare a.name b.name)
-           |> List.map prettify
+           |> List.map fmt_client_name
            |> List.fold_left (fun a b -> a ^ "- " ^ b ^ "\n") ""
 
 (** Check whether a name is taken. *)
-let exists_name name' =
+and exists_name name' =
   !clients |> List.map fst
            |> List.exists (fun client -> client.name = name')
 
 (** Return the connected client with [addr], if they exist. *)
-let get_client addr =
+and get_client addr =
   List.find_opt (fun (client, _) -> client.addr = addr) !clients
 
 (** Return all connected clients other than those with [addr]. *)
-let get_others (addr: Unix.sockaddr) : (client * tx) list =
+and get_others (addr: Unix.sockaddr) : (client * tx) list =
   List.filter (fun (client, _) -> client.addr <> addr) !clients
 
 (** Insert the client into the connected list. *)
-let insert_client (cl: client) (oc: tx) =
+and insert_client (cl: client) (oc: tx) =
   clients := (cl, oc) :: !clients
 
 (** Remove and return the client from the connected list. *)
-let remove_client (addr: Unix.sockaddr): (client * tx) option =
+and remove_client (addr: Unix.sockaddr): (client * tx) option =
   let client = get_client addr in
   let clients' = get_others addr in
   clients := clients';
   client
 
 (** Continously accept new client connections. *)
-let rec loop socket =
+and loop socket =
   Lwt_unix.accept socket >>= accept >>= fun () -> loop socket
 
 (** Accept a new client connection and spawn a listening thread. *)
@@ -159,8 +155,9 @@ and change_color addr color =
   let color' = parse_color client.color color in
   insert_client { client with color = color' } oc;
   Printf.sprintf
-    "%s has changed their %s."
-    (prettify client)
+    "%s %s %s."
+    (fmt_client_name client)
+    (fmt_server "has changed their")
     (AT.sprintf [AT.Bold; color'] "color")
   |> broadcast_server
 
@@ -206,11 +203,15 @@ and broadcast message =
 and fmt_server message =
   (AT.sprintf [AT.Bold; AT.red] "%s" message)
 
+(** Color this client's name. *)
+and fmt_client_name client =
+  AT.sprintf [AT.Bold; client.color] "%s" client.name
+
 (** Prepend the client's colored name to [message]. *)
 and fmt_client client message =
   Printf.sprintf 
     "%s: %s"
-    (prettify client)
+    (fmt_client_name client)
     message
 
 (** Prepend the current time to [message]. *)
