@@ -71,7 +71,14 @@ and initialize addr ic oc =
 and register addr ic oc =
   Lwt_io.read_line_opt ic >>= function
   | None -> disconnect addr
-  | Some name -> connect addr name oc >>= fun () -> listen addr ic
+  | Some name when exists_name name ->
+    Printf.sprintf "Error: %s is already taken." name
+    |> fmt_server
+    |> Lwt_io.fprintl oc
+    >>= fun () -> register addr ic oc
+  | Some name ->
+    connect addr name oc
+    >>= fun () -> listen addr ic
 
 (** Continuously listen for new commands on the channel. *)
 and listen addr ic =
@@ -135,11 +142,12 @@ and list_names addr =
 (** Change the client's nickname and notify the room. *)
 and change_name addr name' =
   remove_client addr >> fun (client, oc) ->
-  if exists_name name' then
-    Printf.sprintf "Error: %s already taken." name'
+  if exists_name name' then begin
+    insert_client client oc;
+    Printf.sprintf "Error: %s is already taken." name'
     |> fmt_server
     |> Lwt_io.fprintl oc
-  else begin
+  end else begin
     insert_client { client with name = name' } oc;
     Printf.sprintf "%s has changed their name to %s." client.name name'
     |> broadcast_server
