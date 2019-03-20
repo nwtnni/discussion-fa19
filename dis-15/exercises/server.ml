@@ -33,8 +33,9 @@ let remove_client (addr: Unix.sockaddr): string option =
 let rec create_socket () =
   let sock = Lwt_unix.socket Lwt_unix.PF_INET Lwt_unix.SOCK_STREAM 0 in
   let addr = Lwt_unix.ADDR_INET (Unix.inet_addr_loopback, 10000) in
-  Lwt_unix.listen sock 100;
-  Lwt_unix.bind sock addr >|= fun () -> sock
+  Lwt_unix.bind sock addr
+  >|= begin fun () -> Lwt_unix.listen sock 100 end
+  >|= begin fun () -> sock end
 
 and loop socket =
   Lwt_unix.accept socket >>= accept >>= fun () -> loop socket
@@ -42,7 +43,8 @@ and loop socket =
 and accept (file, addr) =
   let ic = Lwt_io.of_fd Lwt_io.Input file in
   let oc = Lwt_io.of_fd Lwt_io.Output file in
-  initialize addr ic oc
+  Lwt.async (fun () -> initialize addr ic oc);
+  Lwt.return ()
 
 and initialize addr ic oc =
   Lwt_io.write_line oc "Please enter a nickname.\n"
@@ -72,7 +74,7 @@ and disconnect addr =
 
 and send_all addr message =
   match get_client addr with
-  | None -> failwith "Impossible"
+  | None -> disconnect addr
   | Some client ->
     let message' = Printf.sprintf "[%s]: %s" client.name message in
     addr |> get_others
