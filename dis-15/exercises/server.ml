@@ -150,7 +150,10 @@ and change_color addr color =
   remove_client addr >> fun (client, oc) ->
   let color' = parse_color client.color color in
   insert_client { client with color = color' } oc;
-  Printf.sprintf "%s has %s." client.name (AT.sprintf [color'] "changed their color")
+  Printf.sprintf
+    "%s has changed their %s."
+    (prettify client)
+    (AT.sprintf [AT.Bold; color'] "color")
   |> broadcast_server
 
 (** Attempt to parse a color from unknown string input, using [default] as a fallback. *)
