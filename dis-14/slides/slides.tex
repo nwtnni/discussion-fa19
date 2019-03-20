@@ -1,0 +1,140 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+
+\title{Discussion 14}
+\subtitle{Mutability :O}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+
+    \begin{frame}{Agenda}
+        \begin{enumerate}
+            \item Review of Mutable Constructs
+            \item Exercises
+            \item Rec 14
+        \end{enumerate}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Mutable Fields}
+        \begin{itemize}
+            \item A record can have a mutable field by using the \mintinline{ocaml}{mutable} keyword.
+            \item Ex:
+            \begin{minted}[autogobble]{ocaml}
+            type mutable_student = {
+            name: string,
+            mutable age: int
+            }
+            \end{minted}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Mutable Fields}
+        Try this in utop:
+        \begin{minted}[autogobble=true]{ocaml}
+        type mutable_student = {
+          name: string,
+          mutable age: int
+        }
+        \end{minted}
+        \begin{itemize}
+            \item \mintinline{ocaml}{let kenneth = {name="kenneth";age=20}}
+            \item \mintinline{ocaml}{kenneth.age <- 5}
+            \item What type did the last command return?
+            \item What happens if you type \mintinline{ocaml}{kenneth} now?
+            \item Try running \mintinline{ocaml}{kenneth.name <- "newton"}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Refs}
+        \begin{itemize}
+            \item Refs are just records with a single mutable field:
+            \item From lecture:
+            \begin{minted}[autogobble=true]{ocaml}
+            type 'a ref = { mutable contents: 'a }
+            let ref x = { contents = x }
+            let ( ! ) r = r.contents
+            let ( := ) r newval = r.contents <- newval
+            \end{minted}
+            \item How can we use these?
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Refs}
+        Time for more utop:
+        \begin{itemize}
+            \item \mintinline{ocaml}{let x = ref 0}
+            \item \mintinline{ocaml}{x := !x + 1}
+            \item \mintinline{ocaml}{x}
+            \item \mintinline{ocaml}{let y = ref 1}
+            \item \mintinline{ocaml}{x = y (* What does this evaluate to? *)}
+            \item \mintinline{ocaml}{x == y (* How about this? *)}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Physical Equality}
+        Time for more utop:
+        \begin{itemize}
+            \item \mintinline{ocaml}{(==)} is the physical equality operator
+            \pause
+            \item It checks if two mutable values point to the same location in memory
+            \pause
+            \item Its complement is \mintinline{ocaml}{(!=)} for physically not equal
+            \pause
+            \item The regular equality operators \mintinline{ocaml}{(=)} and 
+                \mintinline{ocaml}{(<>)} check if all the contents of each mutable 
+                field are the same
+            \pause
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Physical Equality}
+        Some questions: (discuss with your neighbors and raise your hand when you have an idea)
+        \begin{itemize}
+            \item Is it possible for \mintinline{ocaml}{(=)} to return true and \mintinline{ocaml}{(==)} to return false?
+            \item Is it possible for \mintinline{ocaml}{(=)} to return false and \mintinline{ocaml}{(==)} to return true?
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Physical Equality/Aliasing}
+    Try out the following:
+    \begin{itemize}
+        \item \mintinline{ocaml}{let x = ref "wowie"}
+        \item \mintinline{ocaml}{let z = x}
+        \item \mintinline{ocaml}{x == z (* What does this evaluate to? *)}
+        \item \mintinline{ocaml}{z := "2b || !2b"}
+        \item \mintinline{ocaml}{x}
+        \item \mintinline{ocaml}{z}
+    \end{itemize}
+    \pause
+
+    This is an example of aliasing!
+    \end{frame}
+
+    \begin{frame}{Aliasing}
+    \begin{itemize}
+        \item Aliasing is when two pointers point to the same location in memory
+        \pause
+        \item It should be familiar from programming in Java and other imperative languages
+        \pause
+        \item It can be hard to keep track of!
+    \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Exercises}
+    \begin{itemize}
+        \item As usual, pull from the repo and check out the exercises
+    \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Rec 14}
+    \end{frame}
+
+\end{document}

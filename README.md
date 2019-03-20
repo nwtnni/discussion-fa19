@@ -47,3 +47,13 @@ Central repository for slides, reviews, and exercises.
 11. [Streams and Laziness](./dis-11)
   - [Slides](./dis-11/slides/slides.pdf)
   - [Exercises](./dis-11/exercises)
+
+12. [Balanced Trees](./dis-12)
+  - [Slides](./dis-12/slides/slides.pdf)
+
+13. [Prelim Review](./prelim/)
+  - [Exercises](./prelim/exercises)
+
+14. [Mutability](./dis-14)
+  - [Slides](./dis-14/slides/slides.pdf)
+  - [Exercises](./dis-14/exercises)
