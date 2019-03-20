@@ -1,1 +1,1 @@
-true: package(lwt), package(lwt.unix), package(str), package(lambda-term)
+true: package(lwt), package(lwt.unix), package(str), package(ANSITerminal)

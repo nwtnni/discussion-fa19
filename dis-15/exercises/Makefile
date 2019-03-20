@@ -7,5 +7,8 @@ delay:
 server:
 	ocamlbuild -use-ocamlfind -tag thread server.byte && ./server.byte
 
+client:
+	ocamlbuild -use-ocamlfind -tag thread client.byte
+
 clean:
 	ocamlbuild -clean
