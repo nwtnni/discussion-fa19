@@ -121,7 +121,7 @@ and fmt_name client message =
 and fmt_time message =
   let time = Unix.gettimeofday () |> Unix.localtime in
   Printf.sprintf
-    "[%i/%i/%i %i:%i:%i] %s"
+    "[%02i/%02i/%02i %02i:%02i:%02i] %s"
     (time.tm_mon + 1)
     time.tm_mday
     (time.tm_year mod 100)
