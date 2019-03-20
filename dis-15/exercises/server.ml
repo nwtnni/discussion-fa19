@@ -1,11 +1,14 @@
 open Lwt.Infix
 
+module AT = ANSITerminal
+
 type rx = Lwt_io.input Lwt_io.channel
 type tx = Lwt_io.output Lwt_io.channel
 
 type client = {
   addr: Unix.sockaddr;
   name: string;
+  color: AT.style;
 }
 
 (** Global list of connected clients. *)
@@ -43,7 +46,8 @@ and accept (file, addr) =
 
 (** Send a welcome message to the client and wait for name registration. *)
 and initialize addr ic oc =
-  Lwt_io.write_line oc "Welcome to lwt-chatroom! Please enter a nickname."
+  AT.sprintf [AT.Bold; AT.red] "Welcome to lwt-chatroom! Please enter a nickname." 
+  |> Lwt_io.write_line oc
   >>= fun () -> register addr ic oc
 
 (** Register the client with the received name. *)
@@ -62,13 +66,15 @@ and listen addr ic =
 and parse addr command =
   let ws = Str.regexp "[ ]+" in
   match Str.bounded_split ws command 2 with
-  | ["q"]       | ["quit"]       -> disconnect addr
-  | ["n"; name] | ["nick"; name] -> change addr name
+  | ["q"]        | ["quit"]         -> disconnect addr
+  | ["h"]        | ["help"]         -> help addr
+  | ["n"; name]  | ["nick"; name]   -> change_name addr name
+  | ["c"; color] | ["color"; color] -> change_color addr color
   | _ -> broadcast_client addr command
 
 (** Insert the client into the connected list and notify the room. *)
 and connect addr name oc =
-  insert_client { addr; name } oc;
+  insert_client { addr; name; color = AT.default } oc;
   let join = Printf.sprintf "%s has joined the chat." name in
   broadcast_server join
 
@@ -77,21 +83,65 @@ and disconnect addr =
   match remove_client addr with
   | None -> Lwt.return ()
   | Some (client, _) ->
-    let left = Printf.sprintf "%s has left the chat." client.name in
-    broadcast_server left
+    Printf.sprintf "%s has left the chat." client.name
+    |> broadcast_server
+
+(** Send the client a help message. *)
+and help addr =
+  match get_client addr with
+  | None -> Lwt.return ()
+  | Some (_, oc) ->
+    Lwt_io.fprintf oc
+      "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n"
+      "--------------------------------------------"
+      (AT.sprintf [AT.Bold; AT.red] "Welcome to lwt-chatroom! Commands are below.")
+      "--------------------------------------------"
+      "| [q]uit        : Exit chatroom"
+      "| [h]elp        : Display commands"
+      "| [n]ick name   : Change name to [name]"
+      "| [c]olor color : Change color to [color]"
+      "--------------------------------------------"
+      (Printf.sprintf "Where color is one of %s, %s, %s, %s, %s, %s, or %s"
+        (AT.sprintf [AT.black] "black")
+        (AT.sprintf [AT.green] "green")
+        (AT.sprintf [AT.yellow] "yellow")
+        (AT.sprintf [AT.blue] "blue")
+        (AT.sprintf [AT.magenta] "magenta")
+        (AT.sprintf [AT.cyan] "cyan")
+        (AT.sprintf [AT.white] "white"))
 
 (** Change the client's nickname and notify the room. *)
-and change addr name' =
+and change_name addr name' =
   match remove_client addr with
   | None -> Lwt.return ()
   | Some (client, oc) ->
     insert_client { client with name = name' } oc;
-    let name = Printf.sprintf "%s has changed their name to %s." client.name name' in
-    broadcast_server name
+    Printf.sprintf "%s has changed their name to %s." client.name name'
+    |> broadcast_server
+
+(** Change the client's color and notify the room. *)
+and change_color addr color =
+  match remove_client addr with
+  | None -> Lwt.return ()
+  | Some (client, oc) ->
+    let color' = match color with
+    | "black" -> AT.black
+    | "green" -> AT.green
+    | "yellow" -> AT.yellow
+    | "blue" -> AT.blue
+    | "magenta" -> AT.magenta
+    | "cyan" -> AT.cyan
+    | "white" -> AT.white
+    | _ -> client.color
+    in
+    insert_client { client with color = color' } oc;
+    Printf.sprintf "%s has %s." client.name (AT.sprintf [client.color] "changed their color")
+    |> broadcast_server
 
 (** Broadcast a message from the server. *)
 and broadcast_server message =
-  message |> fmt_time
+  message |> fmt_server
+          |> fmt_time
           |> broadcast
 
 (** Broadcast a message from a client. *)
@@ -99,7 +149,7 @@ and broadcast_client addr message =
   match get_client addr with
   | None -> Lwt.return ()
   | Some (client, _) ->
-    message |> fmt_name client
+    message |> fmt_client client
             |> fmt_time
             |> broadcast
 
@@ -110,11 +160,15 @@ and broadcast message =
            |> List.map (fun write -> write message)
            |> Lwt.join
 
-(** Prepend the client's name to [message]. *)
-and fmt_name client message =
-  Printf.sprintf
+(** Recolor server announcements. *)
+and fmt_server message =
+  (AT.sprintf [AT.Bold; AT.red] "%s" message)
+
+(** Prepend the client's colored name to [message]. *)
+and fmt_client client message =
+  Printf.sprintf 
     "%s: %s"
-    client.name
+    (AT.sprintf [client.color] "%s" client.name)
     message
 
 (** Prepend the current time to [message]. *)
