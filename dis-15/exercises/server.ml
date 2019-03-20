@@ -98,14 +98,13 @@ and help addr =
     "| [n]ick name   : Change name to [name]"
     "| [c]olor color : Change color to [color]"
     "--------------------------------------------"
-    (Printf.sprintf "Where color is one of\n- %s\n- %s\n- %s\n- %s\n- %s\n- %s\n- %s"
-      (AT.sprintf [AT.black] "black")
-      (AT.sprintf [AT.green] "green")
-      (AT.sprintf [AT.yellow] "yellow")
-      (AT.sprintf [AT.blue] "blue")
-      (AT.sprintf [AT.magenta] "magenta")
-      (AT.sprintf [AT.cyan] "cyan")
-      (AT.sprintf [AT.white] "white"))
+    (Printf.sprintf "Where color is one of\n- %s\n- %s\n- %s\n- %s\n- %s\n- %s"
+      (AT.sprintf [AT.Bold; AT.green] "green")
+      (AT.sprintf [AT.Bold; AT.yellow] "yellow")
+      (AT.sprintf [AT.Bold; AT.blue] "blue")
+      (AT.sprintf [AT.Bold; AT.magenta] "magenta")
+      (AT.sprintf [AT.Bold; AT.cyan] "cyan")
+      (AT.sprintf [AT.Bold; AT.white] "white"))
 
 (** Change the client's nickname and notify the room. *)
 and change_name addr name' =
@@ -124,7 +123,6 @@ and change_color addr color =
 
 (** Attempt to parse a color from unknown string input, using [default] as a fallback. *)
 and parse_color default = function
-| "black" -> AT.black
 | "green" -> AT.green
 | "yellow" -> AT.yellow
 | "blue" -> AT.blue
@@ -169,7 +167,7 @@ and fmt_server message =
 and fmt_client client message =
   Printf.sprintf 
     "%s: %s"
-    (AT.sprintf [client.color] "%s" client.name)
+    (AT.sprintf [AT.Bold; client.color] "%s" client.name)
     message
 
 (** Prepend the current time to [message]. *)
