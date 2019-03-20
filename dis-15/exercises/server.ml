@@ -46,7 +46,8 @@ and accept (file, addr) =
 
 (** Send a welcome message to the client and wait for name registration. *)
 and initialize addr ic oc =
-  AT.sprintf [AT.Bold; AT.red] "Welcome to lwt-chatroom! Please enter a nickname." 
+  "Welcome to lwt-chatroom! Please enter a nickname." 
+  |> fmt_server
   |> Lwt_io.write_line oc
   >>= fun () -> register addr ic oc
 
@@ -80,63 +81,63 @@ and connect addr name oc =
 
 (** Remove the client from the connected list and notify the room. *)
 and disconnect addr =
-  match remove_client addr with
-  | None -> Lwt.return ()
-  | Some (client, _) ->
-    Printf.sprintf "%s has left the chat." client.name
-    |> broadcast_server
+  remove_client addr >> fun (client, _) ->
+  Printf.sprintf "%s has left the chat." client.name
+  |> broadcast_server
 
 (** Send the client a help message. *)
 and help addr =
-  match get_client addr with
-  | None -> Lwt.return ()
-  | Some (_, oc) ->
-    Lwt_io.fprintf oc
-      "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n"
-      "--------------------------------------------"
-      (AT.sprintf [AT.Bold; AT.red] "Welcome to lwt-chatroom! Commands are below.")
-      "--------------------------------------------"
-      "| [q]uit        : Exit chatroom"
-      "| [h]elp        : Display commands"
-      "| [n]ick name   : Change name to [name]"
-      "| [c]olor color : Change color to [color]"
-      "--------------------------------------------"
-      (Printf.sprintf "Where color is one of %s, %s, %s, %s, %s, %s, or %s"
-        (AT.sprintf [AT.black] "black")
-        (AT.sprintf [AT.green] "green")
-        (AT.sprintf [AT.yellow] "yellow")
-        (AT.sprintf [AT.blue] "blue")
-        (AT.sprintf [AT.magenta] "magenta")
-        (AT.sprintf [AT.cyan] "cyan")
-        (AT.sprintf [AT.white] "white"))
+  get_client addr >> fun (_, oc) ->
+  Lwt_io.fprintf oc
+    "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n"
+    "--------------------------------------------"
+    (fmt_server "Welcome to lwt-chatroom! Commands are below.")
+    "--------------------------------------------"
+    "| [q]uit        : Exit chatroom"
+    "| [h]elp        : Display commands"
+    "| [n]ick name   : Change name to [name]"
+    "| [c]olor color : Change color to [color]"
+    "--------------------------------------------"
+    (Printf.sprintf "Where color is one of\n- %s\n- %s\n- %s\n- %s\n- %s\n- %s\n- %s"
+      (AT.sprintf [AT.black] "black")
+      (AT.sprintf [AT.green] "green")
+      (AT.sprintf [AT.yellow] "yellow")
+      (AT.sprintf [AT.blue] "blue")
+      (AT.sprintf [AT.magenta] "magenta")
+      (AT.sprintf [AT.cyan] "cyan")
+      (AT.sprintf [AT.white] "white"))
 
 (** Change the client's nickname and notify the room. *)
 and change_name addr name' =
-  match remove_client addr with
-  | None -> Lwt.return ()
-  | Some (client, oc) ->
-    insert_client { client with name = name' } oc;
-    Printf.sprintf "%s has changed their name to %s." client.name name'
-    |> broadcast_server
+  remove_client addr >> fun (client, oc) ->
+  insert_client { client with name = name' } oc;
+  Printf.sprintf "%s has changed their name to %s." client.name name'
+  |> broadcast_server
 
 (** Change the client's color and notify the room. *)
 and change_color addr color =
-  match remove_client addr with
+  remove_client addr >> fun (client, oc) ->
+  let color' = parse_color client.color color in
+  insert_client { client with color = color' } oc;
+  Printf.sprintf "%s has %s." client.name (AT.sprintf [client.color] "changed their color")
+  |> broadcast_server
+
+(** Attempt to parse a color from unknown string input, using [default] as a fallback. *)
+and parse_color default = function
+| "black" -> AT.black
+| "green" -> AT.green
+| "yellow" -> AT.yellow
+| "blue" -> AT.blue
+| "magenta" -> AT.magenta
+| "cyan" -> AT.cyan
+| "white" -> AT.white
+| _ -> default
+
+(** Monadic plumbing for disconnected clients. *)
+and (>>) (opt: (client * tx) option) (f: (client * tx) -> unit Lwt.t) : unit Lwt.t =
+  match opt with 
   | None -> Lwt.return ()
-  | Some (client, oc) ->
-    let color' = match color with
-    | "black" -> AT.black
-    | "green" -> AT.green
-    | "yellow" -> AT.yellow
-    | "blue" -> AT.blue
-    | "magenta" -> AT.magenta
-    | "cyan" -> AT.cyan
-    | "white" -> AT.white
-    | _ -> client.color
-    in
-    insert_client { client with color = color' } oc;
-    Printf.sprintf "%s has %s." client.name (AT.sprintf [client.color] "changed their color")
-    |> broadcast_server
+  | Some client -> f client
 
 (** Broadcast a message from the server. *)
 and broadcast_server message =
