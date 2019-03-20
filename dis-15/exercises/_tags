@@ -1,1 +1,1 @@
-true: package(lwt), package(lwt.unix)
+true: package(lwt), package(lwt.unix), package(str)
