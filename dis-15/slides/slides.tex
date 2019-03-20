@@ -1,0 +1,153 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+\newcommand{\code}[1]{\mintinline{ocaml}{#1}}
+
+\title{Discussion 15}
+\subtitle{Promises}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+\date{March 20, 2019}
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+
+    \begin{frame}{Key Ideas}
+        \begin{itemize}
+            \item<1-> Like laziness: do it \textbf{eventually}
+            \item<2-> Bind is your best friend: \code{'a t -> ('a -> 'b t) -> 'b t}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Why Promises?}
+        \begin{itemize}
+            \item<1-> Very useful for IO-bound computations and message-passing
+            \item<2-> Don't just sit around waiting
+            \item<3-> Push vs. poll architecture
+            \item<4-> Not useful by themselves: need OS support
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Bind}
+        \begin{itemize}
+            \item<1-> Pipelining should be familiar by now: \code{|>}
+            \item<2-> \code{(|>) : 'a -> ('a -> 'b) -> 'b}
+            \item<3-> Bind is just a fancy pipeline
+            \item<4-> \code{(>>=) : 'a t -> ('a -> 'b t) -> 'b t}
+            \item<5-> Both abstract over \textbf{sequential} composition
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Bind: Function Syntax}
+        Does this remind you of anything?
+
+        \begin{minted}[autogobble]{ocaml}
+            bind promise_a (
+                fun a -> bind promise_b (
+                    fun b -> bind promise_c (
+                        fun c -> do_something_with a b c
+                    )
+                )
+            )
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Application: Function Syntax}
+        \begin{minted}[autogobble]{ocaml}
+        map_refl refl (
+            map_rotors_r_to_l rotors (
+                map_plug plugboard (
+                    index c
+                )
+            )
+        )
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Application: Operator Syntax}
+        \begin{minted}[autogobble]{ocaml}
+            c |> index
+              |> map_plug plugboard
+              |> map_rotors_r_to_l rotors
+              |> map_refl refl
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Bind: Operator Syntax}
+        \begin{minted}[autogobble]{ocaml}
+            promise_a >>= fun a ->
+            promise_b >>= fun b ->
+            promise_c >>= fun c ->
+            do_something_with a b c
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}{Bind: PPX Extensions}
+        \begin{itemize}
+            \item<1-> We don't see PPX extensions in this course for the most part
+            \item<2-> Compile-time code generation!
+            \item<3-> Textbook section 8.20 for the curious
+            \item<4-> Sneak peek: \code{let/lwt a = promise_a in let/lwt b = promise_b in do_something a b}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Libraries}
+        \begin{itemize}
+            \item<1-> \code{#require "lwt";;} - core modules and types
+            \item<2-> \code{#require "lwt.unix";;} - Unix bindings for socket/file IO
+            \item<3-> \code{UTop.set_auto_run_lwt false;;}
+            \item<3-> Special utop behavior for top-level promises (see textbook 8.19)
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Examples: Sequential Composition}
+        \begin{minted}[autogobble]{ocaml}
+            let a () = Lwt_unix.sleep 2.0;;
+            let b () = Lwt_unix.sleep 2.0;;
+            Lwt_main.run begin a () >>= b end;;
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Examples: Sequential Composition(?)}
+        \begin{minted}[autogobble]{ocaml}
+            let a = Lwt_unix.sleep 2.0;;
+            let b = Lwt_unix.sleep 2.0;;
+            Lwt_main.run begin a >>= fun () -> b end;;
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Examples: Concurrent Composition}
+        \begin{minted}[autogobble]{ocaml}  
+            Lwt_main.run begin
+              let a = Lwt_unix.sleep 2.0 in
+              let b = Lwt_unix.sleep 2.0 in
+              a >>= fun () -> b
+            end;;
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Examples: Concurrent Composition}
+        \begin{minted}[autogobble]{ocaml}  
+            Lwt_main.run begin
+              let a = Lwt_unix.sleep 2.0 in
+              let b = Lwt_unix.sleep 2.0 in
+              Lwt.choose [a; b]
+            end;;
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}{More Examples}
+        \begin{itemize}
+            \item<1-> \code{delay.ml} - try and predict the executions!
+            \item<2-> \code{crawl.ml} - interactive "game" loop
+            \item<3-> \code{client.ml} and \code{server.ml} - working chat server!
+        \end{itemize}
+    \end{frame}
+
+
+\end{document}

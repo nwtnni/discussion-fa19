@@ -19,7 +19,7 @@ let rec get_names () =
   !clients |> List.map fst
            |> List.sort (fun a b -> String.compare a.name b.name)
            |> List.map fmt_client_name
-           |> List.fold_left (fun a b -> a ^ "- " ^ b ^ "\n") ""
+           |> List.fold_left (fun a b -> a ^ "-- - " ^ b ^ "\n") ""
 
 (** Check whether a name is taken. *)
 and exists_name name' =
@@ -58,7 +58,7 @@ and accept (file, addr) =
 
 (** Send a welcome message to the client and wait for name registration. *)
 and initialize addr ic oc =
-  "Welcome to lwt-chatroom! Please enter a nickname." 
+  "-- Welcome to lwt-chatroom! Please enter a nickname." 
   |> fmt_server
   |> Lwt_io.fprintl oc
   >>= fun () -> register addr ic oc
@@ -68,7 +68,7 @@ and register addr ic oc =
   Lwt_io.read_line_opt ic >>= function
   | None -> disconnect addr
   | Some name when exists_name name ->
-    Printf.sprintf "Error: %s is already taken." name
+    Printf.sprintf "-- Error: %s is already taken." name
     |> fmt_server
     |> Lwt_io.fprintl oc
     >>= fun () -> register addr ic oc
@@ -110,16 +110,16 @@ and help addr =
   get_client addr >> fun (_, oc) ->
   Lwt_io.fprintf oc
     "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n"
-    "--------------------------------------------"
-    (fmt_server "Welcome to lwt-chatroom! Commands are below.")
-    "--------------------------------------------"
-    "| [q]uit        : Exit chatroom"
-    "| [h]elp        : Display commands"
-    "| [l]ist        : List connected clients"
-    "| [n]ick name   : Change name to [name]"
-    "| [c]olor color : Change color to [color]"
-    "--------------------------------------------"
-    (Printf.sprintf "Where color is one of\n- %s\n- %s\n- %s\n- %s\n- %s\n- %s"
+    "-----------------------------------------------"
+    (fmt_server "-- Welcome to lwt-chatroom! Commands are below.")
+    "-----------------------------------------------"
+    "-- | [q]uit        : Exit chatroom"
+    "-- | [h]elp        : Display commands"
+    "-- | [l]ist        : List connected clients"
+    "-- | [n]ick name   : Change name to [name]"
+    "-- | [c]olor color : Change color to [color]"
+    "-----------------------------------------------"
+    (Printf.sprintf "-- Where color is one of\n-- - %s\n-- - %s\n-- - %s\n-- - %s\n-- - %s\n-- - %s"
       (AT.sprintf [AT.Bold; AT.green] "green")
       (AT.sprintf [AT.Bold; AT.yellow] "yellow")
       (AT.sprintf [AT.Bold; AT.blue] "blue")
@@ -130,9 +130,10 @@ and help addr =
 and list_names addr =
   get_client addr >> fun (_, oc) ->
   Lwt_io.fprintf oc
-    "%s\n%s\n%s"
-    (fmt_server "Connected")
-    ("---------")
+    "%s\n%s\n%s\n%s"
+    ("------------")
+    (fmt_server "-- Connected")
+    ("------------")
     (get_names ())
 
 (** Change the client's nickname and notify the room. *)
@@ -140,7 +141,7 @@ and change_name addr name' =
   remove_client addr >> fun (client, oc) ->
   if exists_name name' then begin
     insert_client client oc;
-    Printf.sprintf "Error: %s is already taken." name'
+    Printf.sprintf "-- Error: %s is already taken." name'
     |> fmt_server
     |> Lwt_io.fprintl oc
   end else begin
