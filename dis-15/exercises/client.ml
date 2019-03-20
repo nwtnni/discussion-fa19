@@ -25,7 +25,7 @@ and read ic =
   Lwt_io.read_line_opt ic >>= function
   | None -> Lwt.return ()
   | Some message ->
-    Lwt_io.printf "%s\n> " message
+    Lwt_io.printf "%s\n" message
     >>= fun () -> read ic
 
 (** Send user commands to the server. *)
