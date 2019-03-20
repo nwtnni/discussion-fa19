@@ -14,6 +14,22 @@ type client = {
 (** Global list of connected clients. *)
 let clients: (client * tx) list ref = ref []
 
+(** Color this client's name. *)
+let prettify client =
+  AT.sprintf [AT.Bold; client.color] "%s" client.name
+
+(** Return a prettified string with all connected clients in alphabetical order. *)
+let get_names () =
+  !clients |> List.map fst
+           |> List.sort (fun a b -> String.compare a.name b.name)
+           |> List.map prettify
+           |> List.fold_left (fun a b -> a ^ "- " ^ b ^ "\n") ""
+
+(** Check whether a name is taken. *)
+let exists_name name' =
+  !clients |> List.map fst
+           |> List.exists (fun client -> client.name = name')
+
 (** Return the connected client with [addr], if they exist. *)
 let get_client addr =
   List.find_opt (fun (client, _) -> client.addr = addr) !clients
@@ -48,7 +64,7 @@ and accept (file, addr) =
 and initialize addr ic oc =
   "Welcome to lwt-chatroom! Please enter a nickname." 
   |> fmt_server
-  |> Lwt_io.write_line oc
+  |> Lwt_io.fprintl oc
   >>= fun () -> register addr ic oc
 
 (** Register the client with the received name. *)
@@ -69,6 +85,7 @@ and parse addr command =
   match Str.bounded_split ws command 2 with
   | ["q"]        | ["quit"]         -> disconnect addr
   | ["h"]        | ["help"]         -> help addr
+  | ["l"]        | ["list"]         -> list_names addr
   | ["n"; name]  | ["nick"; name]   -> change_name addr name
   | ["c"; color] | ["color"; color] -> change_color addr color
   | _ -> broadcast_client addr command
@@ -89,12 +106,13 @@ and disconnect addr =
 and help addr =
   get_client addr >> fun (_, oc) ->
   Lwt_io.fprintf oc
-    "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n"
+    "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n"
     "--------------------------------------------"
     (fmt_server "Welcome to lwt-chatroom! Commands are below.")
     "--------------------------------------------"
     "| [q]uit        : Exit chatroom"
     "| [h]elp        : Display commands"
+    "| [l]ist        : List connected clients"
     "| [n]ick name   : Change name to [name]"
     "| [c]olor color : Change color to [color]"
     "--------------------------------------------"
@@ -106,12 +124,26 @@ and help addr =
       (AT.sprintf [AT.Bold; AT.cyan] "cyan")
       (AT.sprintf [AT.Bold; AT.white] "white"))
 
+and list_names addr =
+  get_client addr >> fun (_, oc) ->
+  Lwt_io.fprintf oc
+    "%s\n%s\n%s"
+    (fmt_server "Connected")
+    ("---------")
+    (get_names ())
+
 (** Change the client's nickname and notify the room. *)
 and change_name addr name' =
   remove_client addr >> fun (client, oc) ->
-  insert_client { client with name = name' } oc;
-  Printf.sprintf "%s has changed their name to %s." client.name name'
-  |> broadcast_server
+  if exists_name name' then
+    Printf.sprintf "Error: %s already taken." name'
+    |> fmt_server
+    |> Lwt_io.fprintl oc
+  else begin
+    insert_client { client with name = name' } oc;
+    Printf.sprintf "%s has changed their name to %s." client.name name'
+    |> broadcast_server
+  end
 
 (** Change the client's color and notify the room. *)
 and change_color addr color =
@@ -155,7 +187,7 @@ and broadcast_client addr message =
 (** Broadcast a message to all connected clients. *)
 and broadcast message =
   !clients |> List.map snd
-           |> List.map (Lwt_io.write_line)
+           |> List.map (Lwt_io.fprintl)
            |> List.map (fun write -> write message)
            |> Lwt.join
 
@@ -167,7 +199,7 @@ and fmt_server message =
 and fmt_client client message =
   Printf.sprintf 
     "%s: %s"
-    (AT.sprintf [AT.Bold; client.color] "%s" client.name)
+    (prettify client)
     message
 
 (** Prepend the current time to [message]. *)
