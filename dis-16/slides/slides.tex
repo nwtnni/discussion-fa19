@@ -1,0 +1,263 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\title{Discussion 16}
+\subtitle{Monads}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+
+
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+    
+    \begin{frame}{Agenda}
+    \begin{enumerate}
+        \item Review of Monads
+        \item Examples of Monads
+        \begin{itemize}
+            \item Promises
+            \item Options
+            \item Error
+            \item Lazy
+            \item Non-Deterministic?
+        \end{itemize}
+        \item More Exercises
+    \end{enumerate}
+    \end{frame}
+    
+    \begin{frame}[fragile]{What is a Monad?}
+    \begin{itemize}
+        \item Monads are a \textit{design pattern} that pops up frequently in functional programming \pause
+        \item A Monad is any module that satisfies the following interface:
+        
+        \begin{minted}[autogobble=true]{ocaml}
+        module type Monad = sig
+          type 'a t
+          val return: 'a -> 'a t
+          val bind: 'a t -> ('a -> 'b t) -> 'b t
+        end
+        \end{minted}
+    \end{itemize}
+    \end{frame}
+    
+    \begin{frame}[fragile]{What is a Monad?}
+    \begin{itemize}
+        \item Monads are a \textit{design pattern} that pops up frequently in functional programming
+        
+        \item A Monad is any module that satisfies the following interface:
+        
+        \begin{minted}[autogobble=true]{ocaml}
+        module type Monad = sig
+          type 'a t
+          val return: 'a -> 'a t
+          val (>>=): 'a t -> ('a -> 'b t) -> 'b t
+        end
+        \end{minted}
+        
+        \item We often use the infix operator \mintinline{ocaml}{(>>=)} for \mintinline{ocaml}{bind}
+    \end{itemize}
+    \end{frame}
+    
+    \begin{frame}[fragile]{What is a Monad?}
+        
+        \begin{minted}[autogobble=true]{ocaml}
+        module type Monad = sig
+          type 'a t
+          val return: 'a -> 'a t
+          val (>>=): 'a t -> ('a -> 'b t) -> 'b t
+        end
+        \end{minted}
+    \begin{itemize}
+        \item The \mintinline{ocaml}{return} function lets a user lift a value into the Monad type \pause
+        \item The \mintinline{ocaml}{(>>=)} function does computation on values that are wrapped in the Monad type
+    \end{itemize}
+    \end{frame}
+    
+    
+    \begin{frame}[fragile]{Some Intuition}
+    \begin{itemize}
+        \item The type \mintinline{ocaml}{t} adds some extra computation to your functions \pause
+        \item It wraps around a piece of data and gives it the ability to do more \pause
+        \item The extra computation is done \textit{implicitly} \pause
+        \item Compare \mintinline{ocaml}{(>>=)} (bind) to \mintinline{ocaml}{(|>)} (pipeline):
+        
+        
+        \begin{minted}[autogobble=true]{ocaml}
+          (|>): 'a -> ('a -> 'b) -> 'b
+          (>>=): 'a t -> ('a -> 'b t) -> 'b t
+        \end{minted}
+    \end{itemize}
+    \end{frame}
+    
+    
+    \begin{frame}[fragile]{Example: Optional Monad}
+        Open up today's exercises and try to implement this with your groupmates:
+        
+        \begin{minted}[autogobble=true]{ocaml}
+        module Optional = struct
+            type 'a t = 'a option
+            let return a = failwith "Unimplemented"
+            let (>>=) a f = failwith "Unimplemented"
+        end
+        \end{minted}
+    \end{frame}
+    
+    
+    \begin{frame}[fragile]{Example: Optional Monad}
+        Open up today's exercises and try to implement this with your groupmates:
+        
+        \begin{minted}[autogobble=true]{ocaml}
+        module Optional = struct
+            type 'a t = 'a option
+            let return a = Some a
+            let (>>=) a f =
+              match a with
+              | Some a -> f a
+              | None -> None
+        end
+        \end{minted}
+    \end{frame}
+    
+    
+    \begin{frame}[fragile]{Example: Error Monad}
+        Open up today's exercises and try to implement this with your groupmates:
+        
+        \begin{minted}[autogobble=true]{ocaml}
+        module Error = struct
+            type 'a t = Error of string | Val of 'a
+            let return a = failwith "Unimplemented"
+            let (>>=) a f = failwith "Unimplemented"
+        end
+        \end{minted}
+    \end{frame}
+    
+    
+    \begin{frame}[fragile]{Example: Error Monad}
+        Open up today's exercises and try to implement this with your groupmates:
+        
+        \begin{minted}[autogobble=true]{ocaml}
+        module Error = struct
+            type 'a t = Error of string | Val of 'a
+            let return a = Val a
+            let (>>=) a f =
+              match a with
+              | Val a -> f a
+              | Error s -> print_endline s; Error s
+        end
+        \end{minted}
+    \end{frame}
+    
+    
+    \begin{frame}[fragile]{Example: Error Monad}
+        Open up today's exercises and try to implement this with your groupmates:
+        
+        \begin{minted}[autogobble=true]{ocaml}
+        module Error = struct
+            type 'a t = Error | Val of 'a
+            let return a = failwith "Unimplemented"
+            let (>>=) a f = failwith "Unimplemented"
+        end
+        \end{minted}
+    \end{frame}
+    
+    
+    
+    \begin{frame}[fragile]{Example: Lazy Monad}
+        Open up today's exercises and try to implement this with your groupmates:
+        
+        \begin{minted}[autogobble=true]{ocaml}
+        type 'a t = unit -> 'a
+        let return a = failwith "Unimplemented"
+        let (>>=) a f = failwith "Unimplemented"
+    
+        (** An extra function specific to Lazy
+            [force l] forces the computation on l,
+            immediately evaluating it to a value *)
+        let force (l: 'a t): 'a = failwith "Unimplemented" 
+        \end{minted}
+    \end{frame}
+    
+    \begin{frame}[fragile]{Example: Lazy Monad}
+        Open up today's exercises and try to implement this with your groupmates:
+        
+        \begin{minted}[autogobble=true]{ocaml}
+        type 'a t = unit -> 'a
+        let return a = failwith "Unimplemented"
+        let (>>=) a f = failwith "Unimplemented"
+    
+        (** An extra function specific to Lazy
+            [force l] forces the computation on l,
+            immediately evaluating it to a value *)
+        let force (l: 'a t): 'a = failwith "Unimplemented" 
+        \end{minted}
+    \end{frame}
+    
+    
+    \begin{frame}[fragile]{Example: Lazy Monad}
+        Open up today's exercises and try to implement this with your groupmates:
+        
+        \begin{minted}[autogobble=true]{ocaml}
+        type 'a t = unit -> 'a
+        let return a = fun () -> a
+        let (>>=) a f = f (a ())
+    
+        (** An extra function specific to Lazy
+            [force l] forces the computation on l,
+            immediately evaluating it to a value *)
+        let force (l: 'a t): 'a = l ()
+        \end{minted}
+    \end{frame}
+    
+    
+    
+    \begin{frame}[fragile]{Example: Nondeterministic Monad???}
+        Open up today's exercises and try to implement this with your groupmates:
+        
+        \begin{minted}[autogobble=true]{ocaml}
+
+        module NonDeterministic = struct
+            type 'a t = 'a list
+            let return a = failwith "Unimplemented"
+            let (>>=) a f = failwith "Unimplemented"
+        end
+        \end{minted}
+    \end{frame}
+    
+    
+    
+    \begin{frame}[fragile]{Example: Nondeterministic Monad???}
+        Open up today's exercises and try to implement this with your groupmates:
+        
+        \begin{minted}[autogobble=true]{ocaml}
+
+        module NonDeterministic = struct
+            type 'a t = 'a list
+            let return a = [a]
+            let (>>=) a f = f (choose_random a)
+        end
+        \end{minted}
+    \end{frame}
+    
+    
+    
+    
+    
+
+\end{document}
+
