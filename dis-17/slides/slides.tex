@@ -1,0 +1,69 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+\newcommand{\code}[1]{\mintinline{ocaml}{#1}}
+
+\title{Discussion 17}
+\subtitle{Memoization}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+\date{March 27, 2019}
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+
+    \begin{frame}{Key Ideas}
+        \begin{itemize}
+            \item<1-> Hide mutable state under functional interface
+            \item<2-> Best of both worlds: fast and easy to reason about
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Memoization}
+        \begin{minted}[autogobble]{ocaml}
+            (** [memoize f] is a function [f'] that
+              * mutably caches previously calculated results. *)
+            val memoize: ('a -> 'b) -> ('a -> 'b)
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}{Memoization}
+        \begin{itemize}
+            \item<1-> Can we apply \code{memoize} directly to recursive functions?
+            \item<2-> \code{let rec factorial n =}
+            \item<2-> \code{  if n = 0 then 1 else n * (factorial (n - 1))}
+            \item<3-> \code{(memoize factorial) 5}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Recursive Memoization}
+        \begin{itemize}
+            \item<1-> Need to adjust structure of recursive function
+            \item<2-> Add self parameter to inject memoization
+            \item<3-> Memoization all the way down
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Recursive Memoization}
+        \begin{minted}[autogobble]{ocaml}
+            let factorial self n =
+              if n = 0 then 1 else n * (self (n - 1))
+        \end{minted} 
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{Recursive Memoization}
+        \begin{minted}[autogobble]{ocaml}
+            let factorial self n =
+              if n = 0 then 1 else n * (self (n - 1))
+
+            let memoize_rec f =
+              failwith "Unimplemented"
+        \end{minted} 
+    \end{frame}
+
+\end{document}
