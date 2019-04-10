@@ -1,0 +1,45 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+\newcommand{\code}[1]{\mintinline{ocaml}{#1}}
+
+\title{Discussion 19}
+\subtitle{Interpreters}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+\date{April 10, 2019}
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{IMP}
+        \begin{minted}[autogobble]{ocaml}
+            type exp =         
+            | Int of int
+            | Var of var
+            | Bin of bin * exp * exp
+
+            and bin =
+            | Add
+            | Sub
+            | Mul
+            | Div
+        \end{minted}
+    \end{frame}
+
+    \begin{frame}[fragile=singleslide]{IMP}
+        \begin{minted}[autogobble]{ocaml}
+            type stm =         
+            | Let of var * exp
+            | Seq of stm * stm
+            | Print of exp
+            | If of exp * stm * stm option
+        \end{minted}
+    \end{frame}
+
+\end{document}
