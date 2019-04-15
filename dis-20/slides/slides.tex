@@ -35,19 +35,19 @@
     \end{frame}
     
     \begin{frame}[fragile]{Type Checking Relation}
-    The type checking relation defines what programs are ``good" and what programs are ``bad"
+    The type checking relation defines what programs are ``good" and what programs are ``bad" \pause 
         \begin{itemize}
-        \item $e$ is well-typed if
+        \item We say $e$ is well-typed if
         \begin{verbatim}
             T |- e : t
-        \end{verbatim}
+        \end{verbatim} \pause
             \item $T$ is the typing context (sometimes called $\Gamma$)
                 \begin{itemize}
                     \item It is a map from variable names $\to$ types
                     \item A lot like the environment we saw when implementing an environment-model interpreter
-                \end{itemize}
-            \item $e$ is the expression
-            \item $t$ is the type of the expression (sometimes called $\tau$)
+                \end{itemize} \pause
+            \item $e$ is the expression pause
+            \item $t$ is the type of the expression (sometimes called $\tau$) \pause 
             \item Read as ``Expression e has type t under context T"
         \end{itemize}
     \end{frame}
