@@ -1,0 +1,204 @@
+\documentclass{beamer}
+\usetheme{Szeged}
+\usecolortheme{beaver}
+
+\usepackage{minted}
+\usemintedstyle{pastie}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\title{Discussion 20}
+\subtitle{Type Checking}
+\author{Kenneth Fang (kwf37), Newton Ni (cn279)}
+
+
+
+\begin{document}
+
+    \begin{frame}
+        \titlepage{}
+    \end{frame}
+    
+    \begin{frame}{Agenda}
+    \begin{enumerate}
+        \item Preview Type Checking Relation
+        \item Exercises
+        \item Midterm Projects
+    \end{enumerate}
+    \end{frame}
+    
+    \begin{frame}[fragile]{Type Checking Relation}
+    The type checking relation defines what programs are ``good" and what programs are ``bad"
+        \begin{itemize}
+        \item $e$ is well-typed if
+        \begin{verbatim}
+            T |- e : t
+        \end{verbatim}
+            \item $T$ is the typing context (sometimes called $\Gamma$)
+                \begin{itemize}
+                    \item It is a map from variable names $\to$ types
+                    \item A lot like the environment we saw when implementing an environment-model interpreter
+                \end{itemize}
+            \item $e$ is the expression
+            \item $t$ is the type of the expression (sometimes called $\tau$)
+            \item Read as ``Expression e has type t under context T"
+        \end{itemize}
+    \end{frame}
+    
+    \begin{frame}[fragile]{Static Semantics: Integer Addition}
+    Suppose we have a Bool Type and an Int Type- here's how we can define the type relation for addition:
+    \begin{columns}
+        \begin{column}{0.48\textwidth}
+\begin{verbatim}
+T |- e1 + e2 : int
+     if  ???
+\end{verbatim}
+    Static Semantics
+        \end{column}
+        \begin{column}{0.48\textwidth}
+        \end{column}
+    \end{columns}
+    \end{frame}
+    
+    \begin{frame}[fragile]{Static Semantics: Integer Addition}
+    Suppose we have a Bool Type and an Int Type- here's how we can define the type relation for addition:
+    \begin{columns}
+        \begin{column}{0.48\textwidth}
+\begin{verbatim}
+T |- e1 + e2 : int
+     if  T |- e1 : int
+     and T |- e2 : int
+\end{verbatim}
+    Static Semantics
+        \end{column}
+        \begin{column}{0.48\textwidth}
+\begin{verbatim}
+<env, e1 + e2> => v
+  if <env, e1> => v1
+  and <env, e2> => v2
+  and v1 + v2 = i
+\end{verbatim}
+    Dynamic Semantics (Environment Model)
+        \end{column}
+    \end{columns}
+    \end{frame}
+    
+    \begin{frame}[fragile]{Static Semantics: Let Expressions}
+    Suppose we have a Bool Type and an Int Type- here's how we can define the type relation for let expressions:
+    \begin{columns}
+        \begin{column}{0.48\textwidth}
+\begin{verbatim}
+T |- let x = e1 in e2 : t
+  if ???
+\end{verbatim}
+    Static Semantics
+        \end{column}
+        \begin{column}{0.48\textwidth}
+\begin{verbatim}
+<env, let x = e1 in e2> => v
+  if <env, e1> -->* v1
+  and <env[x->v1], e2> => v
+\end{verbatim}
+    Dynamic Semantics (Environment Model)
+        \end{column}
+    \end{columns}
+    \end{frame}
+    
+    \begin{frame}[fragile]{Static Semantics: Let Expressions}
+    Suppose we have a Bool Type and an Int Type- here's how we can define the type relation for let expressions:
+    \begin{columns}
+        \begin{column}{0.48\textwidth}
+\begin{verbatim}
+T |- let x = e1 in e2 : t
+  if T |- e1 : t1
+  and T[x->t1] |- e2 : t
+\end{verbatim}
+    Static Semantics
+        \end{column}
+        \begin{column}{0.48\textwidth}
+\begin{verbatim}
+<env, let x = e1 in e2> => v
+  if <env, e1> -->* v1
+  and <env[x->v1], e2> => v
+\end{verbatim}
+    Dynamic Semantics (Environment Model)
+        \end{column}
+    \end{columns}
+    \end{frame}
+    
+    \begin{frame}[fragile]{Static Semantics: If-Then-Else}
+    Suppose we have a Bool Type and an Int Type- here's how we can define the type relation for if statements:
+\begin{verbatim}
+T |- if e1 then e2 else e3 : t
+  if ???
+\end{verbatim}
+    \end{frame}
+    
+    \begin{frame}[fragile]{Static Semantics: If-Then-Else}
+    Suppose we have a Bool Type and an Int Type- here's how we can define the type relation for if statements:
+\begin{verbatim}
+T |- if e1 then e2 else e3 : t
+  if T |- e1 : bool
+  and e2 : t
+  and e2 : t
+\end{verbatim}
+    \end{frame}
+    
+    \begin{frame}{Type Soundness}
+        What does it mean for a program to be good? \pause \\
+        
+        Usually we want these two super-useful properties:
+        \begin{itemize}
+            \item \textbf{Progress:} if \textbf{e:t}, then \textbf{e} is a value or can take a step
+            \item \textbf{Preservation:} if \textbf{e:t} and \textbf{e}$\to$ \textbf{e'}, then \textbf{e':t}
+        \end{itemize}
+    \end{frame}
+    
+    \begin{frame}{Type Soundness}
+        What does it mean for a program to be good? \\
+        
+        Usually we want these two super-useful properties:
+        \begin{itemize}
+            \item \textbf{Progress:} Well-typed programs always run to completion
+            \item \textbf{Preservation:} Evaluation does not change the type of an expression
+        \end{itemize}
+    \end{frame}
+    
+    \begin{frame}{Type Soundness}
+        What does it mean for a program to be good? \\
+        
+        Usually we want these two super-useful properties:
+        \begin{itemize}
+            \item \textbf{Progress:} Well-typed programs always run to completion
+            \item \textbf{Preservation:} Evaluation does not change the type of an expression
+        \end{itemize} \pause
+        
+        If these two properties hold for a type system, we say that type system is ``sound"
+    \end{frame}
+    
+    \begin{frame}[fragile]{Type Soundness: Example}
+        Here's an unsound example: 
+        \begin{verbatim}
+        T |- if e1 then e2 else e3 : t2
+             if  T |- e1 : bool
+             and T |- e2 : t2
+             and T |- e3 : t3
+        \end{verbatim}
+        Does this violate Progress or Preservation (or neither)?
+        
+        
+        \begin{itemize}
+            \item \textbf{Progress:} Well-typed programs always run to completion
+            \item \textbf{Preservation:} Evaluation does not change the type of an expression
+        \end{itemize}
+    \end{frame}
+
+\end{document}
+
