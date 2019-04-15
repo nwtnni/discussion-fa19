@@ -83,7 +83,7 @@ T |- e1 + e2 : int
 <env, e1 + e2> => v
   if <env, e1> => v1
   and <env, e2> => v2
-  and v1 + v2 = i
+  and v1 + v2 = v
 \end{verbatim}
     Dynamic Semantics (Environment Model)
         \end{column}
@@ -103,7 +103,7 @@ T |- let x = e1 in e2 : t
         \begin{column}{0.48\textwidth}
 \begin{verbatim}
 <env, let x = e1 in e2> => v
-  if <env, e1> -->* v1
+  if <env, e1> => v1
   and <env[x->v1], e2> => v
 \end{verbatim}
     Dynamic Semantics (Environment Model)
